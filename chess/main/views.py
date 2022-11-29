@@ -1,7 +1,6 @@
 import io
 import traceback
 
-################
 import chess
 import chess.pgn
 from rest_framework import status, serializers ## create an api
@@ -65,7 +64,7 @@ class ChessCreateGame(APIView):
             game = chess.pgn.Game()
             exporter = chess.pgn.StringExporter(headers=True, variations=True, comments=True) ##
             pgn_string = game.accept(exporter) ##
-            game_obj.pgn = pgn_string ##pgn --> string --> save --> 
+            game_obj.pgn = pgn_string ##pgn --> string --> save -->
             print("pgn_string", pgn_string)
             game_obj.save()
 
@@ -117,9 +116,9 @@ class ChessMove(APIView):
                 return Response(response, status=status.HTTP_400_BAD_REQUEST)
             game = chess.pgn.Game.from_board(board)
 
-            exporter = chess.pgn.StringExporter(headers=True, variations=True, comments=True)
+            exporter = chess.pgn.StringExporter(headers=True, variations=True, comments=True) ##change
             pgn_string = game.accept(exporter)
-            game_obj.pgn = pgn_string 
+            game_obj.pgn = pgn_string
             print("pgn_string",pgn_string)
 
             current_outcome_str = get_outcome_str(board) ##finding string
@@ -129,6 +128,7 @@ class ChessMove(APIView):
             response_data = {
                 "fen": game.end().board().fen(),
                 "board_ascii": [line for line in (str(game.end().board())).splitlines()],
+                "board_ascii_2d": [line.split(" ") for line in (str(game.end().board())).splitlines()],
                 "current-status": current_outcome_str
             }
             return Response(response_data, status=status.HTTP_200_OK)
@@ -148,11 +148,12 @@ class ChessGetGame(APIView):
             except ChessGame.DoesNotExist:
                 return Response({"error": "Game does not exist"}, status=status.HTTP_400_BAD_REQUEST)
             pgn = io.StringIO(game_obj.pgn) ##string -->pgn
-            game = chess.pgn.read_game(pgn) 
+            game = chess.pgn.read_game(pgn)
             current_outcome_str = get_outcome_str(game.end().board())
             response_data = {
                 "fen": game.end().board().fen(),
                 "board_ascii": [line for line in (str(game.end().board())).splitlines()],
+                "board_ascii_2d": [line.split(" ") for line in (str(game.end().board())).splitlines()],
                 "current-status": current_outcome_str
             }
             return Response(response_data, status=status.HTTP_200_OK)
@@ -186,6 +187,7 @@ class ChessGetGameAtSpecificMove(APIView):
             response_data = {
                 "fen": game.board().fen(),
                 "board_ascii": [line for line in (str(game.board())).splitlines()],
+                "board_ascii_2d": [line.split(" ") for line in (str(game.board())).splitlines()],
                 "current-status": current_outcome_str
             }
             return Response(response_data, status=status.HTTP_200_OK)
